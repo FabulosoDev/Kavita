@@ -1,11 +1,53 @@
 <ng-container *ngIf="actions.length > 0">
     <div ngbDropdown container="body" class="d-inline-block">
+      
+      <ng-container *ngFor="let action of nonAdminActions">
+        <button *ngIf="action.children === undefined || action.children.length === 0; else submenuItem" [disabled]="disabled" class="btn {{btnClass}}" id="actions-{{labelBy}}" ngbDropdownToggle (click)="preventClick($event)"><i class="fa {{iconClass}}" aria-hidden="true"></i></button>
+        
+        <ng-template #submenuItem>
+          <button *ngIf="action.children === undefined || action.children.length === 0; else submenuItem" [disabled]="disabled" class="btn {{btnClass}}" id="actions-{{labelBy}}" ngbDropdownToggle (click)="preventClick($event)"><i class="fa {{iconClass}}" aria-hidden="true"></i></button>
+          <ng-container *ngTemplateOutlet="subMenu; context: { $implicit: actions }"></ng-container>
+        </ng-template>
+      </ng-container>
+
+      
       <button [disabled]="disabled" class="btn {{btnClass}}" id="actions-{{labelBy}}" ngbDropdownToggle (click)="preventClick($event)"><i class="fa {{iconClass}}" aria-hidden="true"></i></button>
+      
+      
+      
       <div ngbDropdownMenu attr.aria-labelledby="actions-{{labelBy}}">
         <button ngbDropdownItem *ngFor="let action of nonAdminActions" (click)="performAction($event, action)">{{action.title}}</button>
         <div class="dropdown-divider" *ngIf="nonAdminActions.length > 1 && adminActions.length > 1"></div>
         <button ngbDropdownItem *ngFor="let action of adminActions" (click)="performAction($event, action)">{{action.title}}</button>
       </div>
     </div>
+
     <!-- IDEA: If we are not on desktop, then let's open a bottom drawer instead-->
+
+
+    <!-- <button [cdkMenuTriggerFor]="menu" [disabled]="disabled" class="btn {{btnClass}}" id="actions-{{labelBy}}"><i class="fa {{iconClass}}" aria-hidden="true"></i></button> -->
+    
 </ng-container>
+
+<ng-template #menu>
+  <div class="example-menu" cdkMenu>
+    <ng-container *ngFor="let action of nonAdminActions">
+      <button *ngIf="action.children === undefined || action.children.length === 0; else submenuItem" class="example-menu-item" cdkMenuItem (cdkMenuItemTriggered)="performAction($event, action)">{{action.title}}</button>
+      <ng-template #submenuItem>
+        <button class="example-menu-bar-item" cdkMenuItem [cdkMenuTriggerFor]="subMenu" cdkMenuTrigger>{{action.title}} ></button>
+        <ng-container *ngTemplateOutlet="subMenu; context: { $implicit: actions }"></ng-container>
+      </ng-template>
+    </ng-container>
+    
+    
+    <div class="dropdown-divider" *ngIf="nonAdminActions.length > 1 && adminActions.length > 1"></div>
+    <button *ngFor="let action of adminActions" class="example-menu-item" cdkMenuItem (cdkMenuItemTriggered)="performAction($event, action)">{{action.title}}</button>
+    
+    <!-- <button class="example-menu-bar-item" cdkMenuItem [cdkMenuTriggerFor]="file">File</button> -->
+  </div>
+</ng-template>
+
+<ng-template #subMenu let-actions="actions">
+  <button cdkMenuItem class="example-menu-item">Hi</button>
+  <button *ngFor="let action of actions" class="example-menu-item" cdkMenuItem (cdkMenuItemTriggered)="performAction($event, action)">{{action.title}}</button>
+</ng-template>

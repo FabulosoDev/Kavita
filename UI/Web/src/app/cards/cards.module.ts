@@ -26,7 +26,7 @@ import { ListItemComponent } from './list-item/list-item.component';
 import { VirtualScrollerModule } from '@iharbeck/ngx-virtual-scroller';
 import { SeriesInfoCardsComponent } from './series-info-cards/series-info-cards.component';
 import { DownloadIndicatorComponent } from './download-indicator/download-indicator.component';
-
+import { CdkMenuModule } from '@angular/cdk/menu';
 
 
 
@@ -65,6 +65,8 @@ import { DownloadIndicatorComponent } from './download-indicator/download-indica
     NgbTooltipModule, // Card item
     NgbCollapseModule,
     NgbRatingModule,
+
+    CdkMenuModule,
     
     VirtualScrollerModule,
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ActionItem } from 'src/app/_services/action-factory.service';
+import { Action, ActionItem } from 'src/app/_services/action-factory.service';
 
 @Component({
   selector: 'app-card-actionables',
@@ -19,6 +19,9 @@ export class CardActionablesComponent implements OnInit {
   adminActions: ActionItem<any>[] = [];
   nonAdminActions: ActionItem<any>[] = [];
 
+  get Action() {
+    return Action;
+  }
 
   constructor(private readonly cdRef: ChangeDetectorRef) { }
 
@@ -34,8 +37,6 @@ export class CardActionablesComponent implements OnInit {
   }
 
   performAction(event: any, action: ActionItem<any>) {
-    this.preventClick(event);
-
     if (typeof action.callback === 'function') {
       this.actionHandler.emit(action);
     }

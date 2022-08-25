@@ -10,6 +10,10 @@ import { AccountService } from './account.service';
 
 export enum Action {
   /**
+   * This is placeholder to open a menu
+   */
+  AddTo = -1,
+  /**
    * Mark entity as read
    */
   MarkAsRead = 0,
@@ -77,6 +81,7 @@ export enum Action {
    * Remove from user's Want to Read List
    */
   RemoveFromWantToReadList = 16,
+
 }
 
 export interface ActionItem<T> {
@@ -84,6 +89,7 @@ export interface ActionItem<T> {
   action: Action;
   callback: (action: Action, data: T) => void;
   requiresAdmin: boolean;
+  children?: Array<ActionItem<T>>;
 }
 
 @Injectable({
@@ -156,12 +162,34 @@ export class ActionFactoryService {
           requiresAdmin: true
         });
 
-        this.seriesActions.push({
+        this.seriesActions.find(a => a.action === Action.AddTo)?.children?.push({
           action: Action.AddToCollection,
           title: 'Add to Collection',
           callback: this.dummyCallback,
           requiresAdmin: true
         });
+
+        // this.seriesActions.push({
+        //   action: Action.AddToCollection,
+        //   title: 'Add to Collection',
+        //   callback: this.dummyCallback,
+        //   requiresAdmin: true
+        // });
+
+        // const manageMenu = this.seriesActions.find(a => a.action === Action.Manage)?.children;
+        // manageMenu.push({
+        //   action: Action.Scan,
+        //   title: 'Scan Library',
+        //   callback: this.dummyCallback,
+        //   requiresAdmin: true
+        // });
+
+        // manageMenu.push({
+        //   action: Action.Scan,
+        //   title: 'Scan Library',
+        //   callback: this.dummyCallback,
+        //   requiresAdmin: true
+        // });
 
         this.seriesActions.push({
           action: Action.Edit,
@@ -278,13 +306,28 @@ export class ActionFactoryService {
         title: 'Mark as Unread',
         callback: this.dummyCallback,
           requiresAdmin: false
-      }, 
-      {
-        action: Action.AddToReadingList,
-        title: 'Add to Reading List',
-        callback: this.dummyCallback,
-        requiresAdmin: false
       },
+      {
+        action: Action.AddTo,
+        title: 'Add To',
+        callback: this.dummyCallback,
+        requiresAdmin: false,
+        children: [
+          {
+            action: Action.AddToReadingList,
+            title: 'Add to Reading List',
+            callback: this.dummyCallback,
+            requiresAdmin: false
+          },
+
+        ]
+      }, 
+      // {
+      //   action: Action.AddToReadingList,
+      //   title: 'Add to Reading List',
+      //   callback: this.dummyCallback,
+      //   requiresAdmin: false
+      // },
       {
         action: Action.AddToWantToReadList,
         title: 'Add to Want To Read',
