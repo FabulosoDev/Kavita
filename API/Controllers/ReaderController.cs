@@ -333,7 +333,6 @@ public class ReaderController : BaseApiController
             return Ok();
         }
 
-
         return BadRequest("Could not save progress");
     }
 
