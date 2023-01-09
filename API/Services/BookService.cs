@@ -10,6 +10,7 @@ using API.Data.Metadata;
 using API.DTOs.Reader;
 using API.Entities;
 using API.Entities.Enums;
+using API.Extensions;
 using API.Parser;
 using Docnet.Core;
 using Docnet.Core.Converters;
@@ -18,6 +19,7 @@ using Docnet.Core.Readers;
 using ExCSS;
 using HtmlAgilityPack;
 using Kavita.Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 using SixLabors.ImageSharp;
@@ -64,6 +66,7 @@ public class BookService : IBookService
     private readonly ILogger<BookService> _logger;
     private readonly IDirectoryService _directoryService;
     private readonly IImageService _imageService;
+    private readonly IConfiguration _configuration;
     private readonly StylesheetParser _cssParser = new ();
     private static readonly RecyclableMemoryStreamManager StreamManager = new ();
     private const string CssScopeClass = ".book-content";
@@ -76,11 +79,12 @@ public class BookService : IBookService
         }
     };
 
-    public BookService(ILogger<BookService> logger, IDirectoryService directoryService, IImageService imageService)
+    public BookService(ILogger<BookService> logger, IDirectoryService directoryService, IImageService imageService, IConfiguration configuration)
     {
         _logger = logger;
         _directoryService = directoryService;
         _imageService = imageService;
+        _configuration = configuration;
     }
 
     private static bool HasClickableHrefPart(HtmlNode anchor)
@@ -457,14 +461,14 @@ public class BookService : IBookService
                 }
             }
 
-            var hasVolumeInSeries = !Tasks.Scanner.Parser.Parser.ParseVolume(info.Title)
+            var hasVolumeInSeries = !Tasks.Scanner.Parser.Parser.ParseVolume(info.Title, _configuration.GetVolumeRegex())
                 .Equals(Tasks.Scanner.Parser.Parser.DefaultVolume);
 
             if (string.IsNullOrEmpty(info.Volume) && hasVolumeInSeries && (!info.Series.Equals(info.Title) || string.IsNullOrEmpty(info.Series)))
             {
                 // This is likely a light novel for which we can set series from parsed title
-                info.Series = Tasks.Scanner.Parser.Parser.ParseSeries(info.Title);
-                info.Volume = Tasks.Scanner.Parser.Parser.ParseVolume(info.Title);
+                info.Series = Tasks.Scanner.Parser.Parser.ParseSeries(info.Title, _configuration.GetSeriesRegex());
+                info.Volume = Tasks.Scanner.Parser.Parser.ParseVolume(info.Title, _configuration.GetVolumeRegex());
             }
 
             return info;

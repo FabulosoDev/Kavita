@@ -11,7 +11,7 @@ public static class Parser
 {
     public const string DefaultChapter = "0";
     public const string DefaultVolume = "0";
-    private static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
+    public static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(500);
 
     public const string ImageFileExtensions = @"^(\.png|\.jpeg|\.jpg|\.webp|\.gif)";
     public const string ArchiveFileExtensions = @"\.cbz|\.zip|\.rar|\.cbr|\.tar.gz|\.7zip|\.7z|\.cb7|\.cbt";
@@ -21,7 +21,7 @@ public static class Parser
     public const string SupportedExtensions =
         ArchiveFileExtensions + "|" + ImageFileExtensions + "|" + BookFileExtensions;
 
-    private const RegexOptions MatchOptions =
+    public const RegexOptions MatchOptions =
         RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.CultureInvariant;
 
     /// <summary>
@@ -664,8 +664,18 @@ public static class Parser
         return ComicSpecialRegex.IsMatch(filePath);
     }
 
-    public static string ParseSeries(string filename)
+    public static string ParseSeries(string filename, Regex[] customSeriesRegex)
     {
+        foreach (var regex in customSeriesRegex)
+        {
+            var matches = regex.Matches(filename);
+            foreach (var group in matches.Select(match => match.Groups["Series"])
+                         .Where(group => group.Success && group != Match.Empty))
+            {
+                return CleanTitle(group.Value);
+            }
+        }
+
         foreach (var regex in MangaSeriesRegex)
         {
             var matches = regex.Matches(filename);
@@ -693,8 +703,21 @@ public static class Parser
         return string.Empty;
     }
 
-    public static string ParseVolume(string filename)
+    public static string ParseVolume(string filename, Regex[] customVolumeRegex)
     {
+        foreach (var regex in customVolumeRegex)
+        {
+            var matches = regex.Matches(filename);
+            foreach (var group in matches.Select(match => match.Groups))
+            {
+                if (!group["Volume"].Success || group["Volume"] == Match.Empty) continue;
+
+                var value = group["Volume"].Value;
+                var hasPart = group["Part"].Success;
+                return FormatValue(value, hasPart);
+            }
+        }
+
         foreach (var regex in MangaVolumeRegex)
         {
             var matches = regex.Matches(filename);

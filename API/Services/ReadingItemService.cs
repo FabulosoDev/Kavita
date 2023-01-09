@@ -1,8 +1,10 @@
 ﻿using System;
 using API.Data.Metadata;
 using API.Entities.Enums;
+using API.Extensions;
 using API.Parser;
 using API.Services.Tasks.Scanner.Parser;
+using Microsoft.Extensions.Configuration;
 
 namespace API.Services;
 
@@ -22,16 +24,18 @@ public class ReadingItemService : IReadingItemService
     private readonly IBookService _bookService;
     private readonly IImageService _imageService;
     private readonly IDirectoryService _directoryService;
+    private readonly IConfiguration _configuration;
     private readonly IDefaultParser _defaultParser;
 
-    public ReadingItemService(IArchiveService archiveService, IBookService bookService, IImageService imageService, IDirectoryService directoryService)
+    public ReadingItemService(IArchiveService archiveService, IBookService bookService, IImageService imageService, IDirectoryService directoryService, IConfiguration configuration)
     {
         _archiveService = archiveService;
         _bookService = bookService;
         _imageService = imageService;
         _directoryService = directoryService;
+        _configuration = configuration;
 
-        _defaultParser = new DefaultParser(directoryService);
+        _defaultParser = new DefaultParser(directoryService, configuration);
     }
 
     /// <summary>
@@ -70,18 +74,18 @@ public class ReadingItemService : IReadingItemService
 
 
         // This catches when original library type is Manga/Comic and when parsing with non
-        if (Tasks.Scanner.Parser.Parser.IsEpub(path) && Tasks.Scanner.Parser.Parser.ParseVolume(info.Series) != Tasks.Scanner.Parser.Parser.DefaultVolume) // Shouldn't this be info.Volume != DefaultVolume?
+        if (Tasks.Scanner.Parser.Parser.IsEpub(path) && Tasks.Scanner.Parser.Parser.ParseVolume(info.Series, _configuration.GetVolumeRegex()) != Tasks.Scanner.Parser.Parser.DefaultVolume) // Shouldn't this be info.Volume != DefaultVolume?
         {
-            var hasVolumeInTitle = !Tasks.Scanner.Parser.Parser.ParseVolume(info.Title)
+            var hasVolumeInTitle = !Tasks.Scanner.Parser.Parser.ParseVolume(info.Title, _configuration.GetVolumeRegex())
                     .Equals(Tasks.Scanner.Parser.Parser.DefaultVolume);
-            var hasVolumeInSeries = !Tasks.Scanner.Parser.Parser.ParseVolume(info.Series)
+            var hasVolumeInSeries = !Tasks.Scanner.Parser.Parser.ParseVolume(info.Series, _configuration.GetVolumeRegex())
                 .Equals(Tasks.Scanner.Parser.Parser.DefaultVolume);
 
             if (string.IsNullOrEmpty(info.ComicInfo?.Volume) && hasVolumeInTitle && (hasVolumeInSeries || string.IsNullOrEmpty(info.Series)))
             {
                 // This is likely a light novel for which we can set series from parsed title
-                info.Series = Tasks.Scanner.Parser.Parser.ParseSeries(info.Title);
-                info.Volumes = Tasks.Scanner.Parser.Parser.ParseVolume(info.Title);
+                info.Series = Tasks.Scanner.Parser.Parser.ParseSeries(info.Title, _configuration.GetSeriesRegex());
+                info.Volumes = Tasks.Scanner.Parser.Parser.ParseVolume(info.Title, _configuration.GetVolumeRegex());
             }
             else
             {

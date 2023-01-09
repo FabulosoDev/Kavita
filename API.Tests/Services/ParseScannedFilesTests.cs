@@ -241,7 +241,7 @@ public class ParseScannedFilesTests
 
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fileSystem);
         var psf = new ParseScannedFiles(Substitute.For<ILogger<ParseScannedFiles>>(), ds,
-            new MockReadingItemService(new DefaultParser(ds)), Substitute.For<IEventHub>());
+            new MockReadingItemService(new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>())), Substitute.For<IEventHub>());
 
         var parsedSeries = new Dictionary<ParsedSeries, IList<ParserInfo>>();
 
@@ -297,7 +297,7 @@ public class ParseScannedFilesTests
         var fileSystem = CreateTestFilesystem();
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fileSystem);
         var psf = new ParseScannedFiles(Substitute.For<ILogger<ParseScannedFiles>>(), ds,
-            new MockReadingItemService(new DefaultParser(ds)), Substitute.For<IEventHub>());
+            new MockReadingItemService(new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>())), Substitute.For<IEventHub>());
 
         var directoriesSeen = new HashSet<string>();
         await psf.ProcessFiles("C:/Data/", true, await _unitOfWork.SeriesRepository.GetFolderPathMap(1),
@@ -316,7 +316,7 @@ public class ParseScannedFilesTests
         var fileSystem = CreateTestFilesystem();
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fileSystem);
         var psf = new ParseScannedFiles(Substitute.For<ILogger<ParseScannedFiles>>(), ds,
-            new MockReadingItemService(new DefaultParser(ds)), Substitute.For<IEventHub>());
+            new MockReadingItemService(new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>())), Substitute.For<IEventHub>());
 
         var directoriesSeen = new HashSet<string>();
         await psf.ProcessFiles("C:/Data/", false, await _unitOfWork.SeriesRepository.GetFolderPathMap(1),(files, directoryPath) =>
@@ -345,7 +345,7 @@ public class ParseScannedFilesTests
 
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fileSystem);
         var psf = new ParseScannedFiles(Substitute.For<ILogger<ParseScannedFiles>>(), ds,
-            new MockReadingItemService(new DefaultParser(ds)), Substitute.For<IEventHub>());
+            new MockReadingItemService(new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>())), Substitute.For<IEventHub>());
 
         var callCount = 0;
         await psf.ProcessFiles("C:/Data", true, await _unitOfWork.SeriesRepository.GetFolderPathMap(1),(files, folderPath) =>
@@ -377,7 +377,7 @@ public class ParseScannedFilesTests
 
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fileSystem);
         var psf = new ParseScannedFiles(Substitute.For<ILogger<ParseScannedFiles>>(), ds,
-            new MockReadingItemService(new DefaultParser(ds)), Substitute.For<IEventHub>());
+            new MockReadingItemService(new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>())), Substitute.For<IEventHub>());
 
         var callCount = 0;
         await psf.ProcessFiles("C:/Data", false, await _unitOfWork.SeriesRepository.GetFolderPathMap(1),(files, folderPath) =>

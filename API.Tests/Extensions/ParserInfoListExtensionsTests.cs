@@ -20,7 +20,7 @@ public class ParserInfoListExtensions
     {
         _defaultParser =
             new DefaultParser(new DirectoryService(Substitute.For<ILogger<DirectoryService>>(),
-                new MockFileSystem()));
+                new MockFileSystem()), Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>());
     }
 
     [Theory]

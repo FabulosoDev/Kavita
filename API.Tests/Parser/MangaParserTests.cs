@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using API.Entities.Enums;
 using Xunit;
 using Xunit.Abstractions;
@@ -84,7 +85,7 @@ public class MangaParserTests
     [InlineData("시즌34삽화2", "34")]
     public void ParseVolumeTest(string filename, string expected)
     {
-        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseVolume(filename));
+        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseVolume(filename, new Regex[0]));
     }
 
     [Theory]
@@ -198,7 +199,7 @@ public class MangaParserTests
     [InlineData("Accel World: Vol 1", "Accel World")]
     public void ParseSeriesTest(string filename, string expected)
     {
-        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseSeries(filename));
+        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseSeries(filename, new Regex[0]));
     }
 
     [Theory]

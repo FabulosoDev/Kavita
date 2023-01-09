@@ -1,4 +1,5 @@
-﻿using Xunit;
+using System.Text.RegularExpressions;
+using Xunit;
 
 namespace API.Tests.Parser;
 
@@ -10,7 +11,7 @@ public class BookParserTests
     [InlineData("Faust - Volume 01 [Del Rey][Scans_Compressed]", "Faust")]
     public void ParseSeriesTest(string filename, string expected)
     {
-        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseSeries(filename));
+        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseSeries(filename, new Regex[0]));
     }
 
     [Theory]
@@ -18,7 +19,7 @@ public class BookParserTests
     [InlineData("Faust - Volume 01 [Del Rey][Scans_Compressed]", "1")]
     public void ParseVolumeTest(string filename, string expected)
     {
-        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseVolume(filename));
+        Assert.Equal(expected, API.Services.Tasks.Scanner.Parser.Parser.ParseVolume(filename, new Regex[0]));
     }
 
     // [Theory]

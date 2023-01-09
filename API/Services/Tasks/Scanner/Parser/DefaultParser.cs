@@ -1,7 +1,9 @@
 using System.IO;
 using System.Linq;
 using API.Entities.Enums;
+using API.Extensions;
 using API.Parser;
+using Microsoft.Extensions.Configuration;
 
 namespace API.Services.Tasks.Scanner.Parser;
 
@@ -17,10 +19,12 @@ public interface IDefaultParser
 public class DefaultParser : IDefaultParser
 {
     private readonly IDirectoryService _directoryService;
+    private readonly IConfiguration _configuration;
 
-    public DefaultParser(IDirectoryService directoryService)
+    public DefaultParser(IDirectoryService directoryService, IConfiguration configuration)
     {
         _directoryService = directoryService;
+        _configuration = configuration;
     }
 
     /// <summary>
@@ -43,8 +47,8 @@ public class DefaultParser : IDefaultParser
             ret = new ParserInfo
             {
                 Chapters = Parser.ParseChapter(fileName) ?? Parser.ParseComicChapter(fileName),
-                Series = Parser.ParseSeries(fileName) ?? Parser.ParseComicSeries(fileName),
-                Volumes = Parser.ParseVolume(fileName) ?? Parser.ParseComicVolume(fileName),
+                Series = Parser.ParseSeries(fileName, _configuration.GetSeriesRegex()) ?? Parser.ParseComicSeries(fileName),
+                Volumes = Parser.ParseVolume(fileName, _configuration.GetVolumeRegex()) ?? Parser.ParseComicVolume(fileName),
                 Filename = Path.GetFileName(filePath),
                 Format = Parser.ParseFormat(filePath),
                 FullFilePath = filePath
@@ -55,8 +59,8 @@ public class DefaultParser : IDefaultParser
             ret = new ParserInfo
             {
                 Chapters = type == LibraryType.Comic ? Parser.ParseComicChapter(fileName) : Parser.ParseChapter(fileName),
-                Series = type == LibraryType.Comic ? Parser.ParseComicSeries(fileName) : Parser.ParseSeries(fileName),
-                Volumes = type == LibraryType.Comic ? Parser.ParseComicVolume(fileName) : Parser.ParseVolume(fileName),
+                Series = type == LibraryType.Comic ? Parser.ParseComicSeries(fileName) : Parser.ParseSeries(fileName, _configuration.GetSeriesRegex()),
+                Volumes = type == LibraryType.Comic ? Parser.ParseComicVolume(fileName) : Parser.ParseVolume(fileName, _configuration.GetVolumeRegex()),
                 Filename = Path.GetFileName(filePath),
                 Format = Parser.ParseFormat(filePath),
                 Title = Path.GetFileNameWithoutExtension(fileName),
@@ -135,7 +139,7 @@ public class DefaultParser : IDefaultParser
         if (fallbackFolders.Count == 0)
         {
             var rootFolderName = _directoryService.FileSystem.DirectoryInfo.FromDirectoryName(rootPath).Name;
-            var series = Parser.ParseSeries(rootFolderName);
+            var series = Parser.ParseSeries(rootFolderName, _configuration.GetSeriesRegex());
 
             if (string.IsNullOrEmpty(series))
             {
@@ -154,7 +158,7 @@ public class DefaultParser : IDefaultParser
         {
             var folder = fallbackFolders[i];
 
-            var parsedVolume = type is LibraryType.Manga ? Parser.ParseVolume(folder) : Parser.ParseComicVolume(folder);
+            var parsedVolume = type is LibraryType.Manga ? Parser.ParseVolume(folder, _configuration.GetVolumeRegex()) : Parser.ParseComicVolume(folder);
             var parsedChapter = type is LibraryType.Manga ? Parser.ParseChapter(folder) : Parser.ParseComicChapter(folder);
 
             if (!parsedVolume.Equals(Parser.DefaultVolume) || !parsedChapter.Equals(Parser.DefaultChapter))
@@ -172,7 +176,7 @@ public class DefaultParser : IDefaultParser
             // Generally users group in series folders. Let's try to parse series from the top folder
             if (!folder.Equals(ret.Series) && i == fallbackFolders.Count - 1)
             {
-                var series = Parser.ParseSeries(folder);
+                var series = Parser.ParseSeries(folder, _configuration.GetSeriesRegex());
 
                 if (string.IsNullOrEmpty(series))
                 {

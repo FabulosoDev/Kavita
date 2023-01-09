@@ -20,7 +20,7 @@ public class DefaultParserTests
     {
         _testOutputHelper = testOutputHelper;
         var directoryService = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), new MockFileSystem());
-        _defaultParser = new DefaultParser(directoryService);
+        _defaultParser = new DefaultParser(directoryService, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>());
     }
 
 
@@ -30,6 +30,7 @@ public class DefaultParserTests
     [InlineData("C:/", "C:/Love Hina/Specials/Ani-Hina Art Collection.cbz", "Love Hina")]
     [InlineData("C:/", "C:/Mujaki no Rakuen Something/Mujaki no Rakuen Vol12 ch76.cbz", "Mujaki no Rakuen")]
     [InlineData("C:/", "C:/Something Random/Mujaki no Rakuen SP01.cbz", "Something Random")]
+    [InlineData("C:/", "C:/c't/c't Magazine/c't Magazin 2022 - Ausgabe 01 (2021-12-18).pdf", "Something Random")]
     public void ParseFromFallbackFolders_FallbackShouldParseSeries(string rootDir, string inputPath, string expectedSeries)
     {
         var actual = _defaultParser.Parse(inputPath, rootDir);
@@ -73,7 +74,7 @@ public class DefaultParserTests
         fs.AddDirectory(rootDirectory);
         fs.AddFile(inputFile, new MockFileData(""));
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fs);
-        var parser = new DefaultParser(ds);
+        var parser = new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>());
         var actual = parser.Parse(inputFile, rootDirectory);
         _defaultParser.ParseFromFallbackFolders(inputFile, rootDirectory, LibraryType.Manga, ref actual);
         Assert.Equal(expectedParseInfo, actual.Series);
@@ -89,7 +90,7 @@ public class DefaultParserTests
         fs.AddDirectory(rootDirectory);
         fs.AddFile(inputFile, new MockFileData(""));
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), fs);
-        var parser = new DefaultParser(ds);
+        var parser = new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>());
         var actual = parser.Parse(inputFile, rootDirectory);
         _defaultParser.ParseFromFallbackFolders(inputFile, rootDirectory, LibraryType.Manga, ref actual);
         Assert.Equal(expectedParseInfo, actual.Series);
@@ -311,7 +312,7 @@ public class DefaultParserTests
         filesystem.AddFile(@"E:/Manga/Foo 50/Specials/Foo 50 SP01.cbz", new MockFileData(""));
 
         var ds = new DirectoryService(Substitute.For<ILogger<DirectoryService>>(), filesystem);
-        var parser = new DefaultParser(ds);
+        var parser = new DefaultParser(ds, Substitute.For<Microsoft.Extensions.Configuration.IConfiguration>());
 
         var filepath = @"E:/Manga/Foo 50/Foo 50 v1.cbz";
         // There is a bad parse for series like "Foo 50", so we have parsed chapter as 50
